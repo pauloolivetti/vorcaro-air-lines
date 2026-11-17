@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vorcaro Air Lines</title>
+<link rel="stylesheet" href="/leaflet/leaflet.css">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ceu: #7fd3ff; --ceu2: #c9efff; --azul: #0b3c8c; --ouro: #ffc629;
+    --vermelho: #ff4d5e; --tinta: #14213d; --papel: #fffdf5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: Nunito, sans-serif; color: var(--tinta);
+    background: linear-gradient(180deg, var(--ceu) 0%, var(--ceu2) 520px, #eaf8ff 100%);
+    min-height: 100vh; overflow-x: hidden;
+  }
+
+  /* ---------- CÉU, NUVENS E AVIÃOZINHO ---------- */
+  .ceu { position: absolute; inset: 0 0 auto 0; height: 360px; overflow: hidden; pointer-events: none; }
+  .nuvem { position: absolute; background: #fff; border-radius: 100px; opacity: .95; animation: vento linear infinite; }
+  .nuvem::before, .nuvem::after { content: ""; position: absolute; background: #fff; border-radius: 50%; }
+  .nuvem::before { width: 55%; height: 160%; left: 12%; top: -70%; }
+  .nuvem::after  { width: 40%; height: 130%; right: 12%; top: -50%; }
+  .n1 { width: 160px; height: 46px; top: 40px;  animation-duration: 48s; }
+  .n2 { width: 110px; height: 32px; top: 150px; animation-duration: 34s; animation-delay: -12s; }
+  .n3 { width: 200px; height: 56px; top: 250px; animation-duration: 60s; animation-delay: -30s; }
+  .n4 { width: 90px;  height: 26px; top: 95px;  animation-duration: 28s; animation-delay: -20s; }
+  @keyframes vento { from { left: -260px; } to { left: 110%; } }
+  .aviaozinho { position: absolute; top: 70px; font-size: 38px; animation: voo 16s linear infinite; }
+  .faixa {
+    position: absolute; left: -210px; top: 10px; white-space: nowrap; background: var(--ouro);
+    border: 3px solid var(--tinta); padding: 2px 10px; font: 16px Bangers, cursive; letter-spacing: 1px;
+    border-radius: 4px;
+  }
+  @keyframes voo { from { left: -320px; } to { left: 110%; } }
+
+  /* ---------- CABEÇALHO ---------- */
+  header {
+    position: relative; max-width: 1200px; margin: 0 auto; padding: 24px 16px 8px;
+    display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  }
+  .caricatura { width: 210px; flex: none; filter: drop-shadow(6px 8px 0 rgba(20,33,61,.25)); animation: balanca 4s ease-in-out infinite; transform-origin: bottom center; }
+  @keyframes balanca { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+  .marca { flex: 1; min-width: 260px; }
+  .logo {
+    font: 74px/0.95 Bangers, cursive; letter-spacing: 3px; margin: 0; color: var(--ouro);
+    -webkit-text-stroke: 3px var(--tinta); text-shadow: 6px 6px 0 var(--azul);
+    transform: rotate(-2deg);
+  }
+  .logo small { display: block; font-size: 40px; color: #fff; text-shadow: 4px 4px 0 var(--vermelho); }
+  .balao {
+    display: inline-block; margin-top: 14px; background: #fff; border: 3px solid var(--tinta);
+    border-radius: 18px; padding: 10px 16px; font-weight: 900; font-size: 18px; position: relative;
+    box-shadow: 4px 4px 0 var(--tinta); min-height: 50px;
+  }
+  .balao::before {
+    content: ""; position: absolute; left: -18px; top: 14px; border: 9px solid transparent;
+    border-right: 14px solid var(--tinta);
+  }
+  .selo {
+    display: inline-block; margin: 10px 8px 0 0; padding: 4px 10px; border-radius: 999px;
+    background: var(--vermelho); color: #fff; font-weight: 900; font-size: 13px; border: 2px solid var(--tinta);
+    transform: rotate(-2deg);
+  }
+  .selo.az { background: var(--azul); transform: rotate(2deg); }
+
+  /* ---------- CONTEÚDO ---------- */
+  main {
+    position: relative; max-width: 1200px; margin: 0 auto; padding: 16px;
+    display: grid; grid-template-columns: 360px 1fr; gap: 20px;
+  }
+  .cartao {
+    background: var(--papel); border: 3px solid var(--tinta); border-radius: 18px;
+    box-shadow: 6px 6px 0 var(--tinta); padding: 18px;
+  }
+  h2 { font: 30px Bangers, cursive; letter-spacing: 1.5px; margin: 0 0 12px; color: var(--azul); }
+  label { display: block; font-weight: 900; margin: 10px 0 4px; }
+  select {
+    width: 100%; padding: 10px; font: 700 16px Nunito, sans-serif; border: 3px solid var(--tinta);
+    border-radius: 12px; background: #fff;
+  }
+  .trocar {
+    display: block; margin: 8px auto 0; border: 2px solid var(--tinta); background: #fff; border-radius: 999px;
+    padding: 2px 12px; font-weight: 900; cursor: pointer;
+  }
+  .decolar {
+    width: 100%; margin-top: 16px; padding: 14px; font: 26px Bangers, cursive; letter-spacing: 2px;
+    background: var(--ouro); color: var(--tinta); border: 3px solid var(--tinta); border-radius: 14px;
+    box-shadow: 4px 4px 0 var(--tinta); cursor: pointer; transition: transform .1s;
+  }
+  .decolar:hover { transform: translate(-2px, -2px) rotate(-1deg); box-shadow: 6px 6px 0 var(--tinta); }
+  .decolar:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--tinta); }
+  .carregando { margin-top: 12px; font-weight: 700; font-style: italic; min-height: 22px; }
+
+  /* ---------- BILHETE (resultado) ---------- */
+  .bilhete { margin-top: 18px; display: none; }
+  .bilhete.on { display: block; animation: pula .5s; }
+  @keyframes pula { 0% { transform: scale(.8) rotate(-4deg); opacity: 0; } 70% { transform: scale(1.04); } 100% { transform: none; opacity: 1; } }
+  .bilhete .topo {
+    background: var(--azul); color: #fff; border-radius: 14px 14px 0 0; padding: 8px 14px;
+    font: 20px Bangers, cursive; letter-spacing: 1px; display: flex; justify-content: space-between;
+    border: 3px solid var(--tinta); border-bottom: none;
+  }
+  .bilhete .corpo {
+    border: 3px solid var(--tinta); border-top: 3px dashed var(--tinta); border-radius: 0 0 14px 14px;
+    padding: 12px 14px; background: #fff;
+  }
+  .caminho { font: 26px Bangers, cursive; letter-spacing: 1px; color: var(--azul); word-break: break-word; }
+  .caminho span { color: var(--vermelho); }
+  .trechos { font-size: 14px; margin: 6px 0 10px; padding-left: 18px; }
+  .numeros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; text-align: center; }
+  .numeros div { background: var(--ceu2); border: 2px solid var(--tinta); border-radius: 10px; padding: 6px 2px; }
+  .numeros b { display: block; font: 22px Bangers, cursive; letter-spacing: 1px; }
+  .numeros small { font-size: 11px; font-weight: 900; text-transform: uppercase; }
+  .letrinha { font-size: 11px; margin-top: 8px; color: #555; }
+  .erro { color: var(--vermelho); font-weight: 900; }
+
+  #mapa { height: 620px; border-radius: 14px; border: 3px solid var(--tinta); }
+  .mapa-cartao { padding: 10px; }
+  .aviao-mapa { font-size: 30px; line-height: 30px; text-align: center; }
+
+  footer { max-width: 1200px; margin: 10px auto 30px; padding: 0 16px; font-size: 13px; text-align: center; color: #34507a; }
+
+  @media (max-width: 860px) {
+    main { grid-template-columns: 1fr; }
+    #mapa { height: 420px; }
+    .logo { font-size: 52px; }
+    .logo small { font-size: 30px; }
+    .caricatura { width: 150px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ceu">
+  <div class="nuvem n1"></div><div class="nuvem n2"></div><div class="nuvem n3"></div><div class="nuvem n4"></div>
+  <div class="aviaozinho">✈️<span class="faixa">VOE MASTER, VOE VORCARO!</span></div>
+</div>
+
+<header>
+  <!-- ===== CARICATURA DO "COMANDANTE VORCARO" (desenhada à mão em SVG) ===== -->
+  <svg class="caricatura" viewBox="0 0 220 260" aria-label="Caricatura do Comandante Vorcaro">
+    <!-- corpo / terno -->
+    <path d="M30 260 Q35 190 110 182 Q185 190 190 260 Z" fill="#0b3c8c" stroke="#14213d" stroke-width="4"/>
+    <path d="M88 186 L110 230 L132 186 Z" fill="#fff" stroke="#14213d" stroke-width="3"/>
+    <path d="M104 196 L116 196 L113 240 L110 248 L107 240 Z" fill="#ff4d5e" stroke="#14213d" stroke-width="3"/>
+    <!-- divisas de piloto -->
+    <rect x="40" y="200" width="34" height="8" rx="2" fill="#ffc629" stroke="#14213d" stroke-width="2" transform="rotate(-18 57 204)"/>
+    <rect x="146" y="200" width="34" height="8" rx="2" fill="#ffc629" stroke="#14213d" stroke-width="2" transform="rotate(18 163 204)"/>
+    <!-- broche de cifrão -->
+    <circle cx="150" cy="226" r="11" fill="#ffc629" stroke="#14213d" stroke-width="3"/>
+    <text x="150" y="232" text-anchor="middle" font-family="Bangers" font-size="17" fill="#14213d">$</text>
+    <!-- pescoço -->
+    <rect x="94" y="160" width="32" height="30" fill="#f2b98d" stroke="#14213d" stroke-width="3"/>
+    <!-- orelhas -->
+    <ellipse cx="44" cy="118" rx="16" ry="22" fill="#f2b98d" stroke="#14213d" stroke-width="4"/>
+    <ellipse cx="176" cy="118" rx="16" ry="22" fill="#f2b98d" stroke="#14213d" stroke-width="4"/>
+    <!-- cabeção -->
+    <ellipse cx="110" cy="112" rx="66" ry="70" fill="#f8c9a0" stroke="#14213d" stroke-width="4"/>
+    <!-- cabelo penteado pra trás com gel -->
+    <path d="M48 92 Q50 40 110 36 Q170 40 172 92 Q160 66 110 62 Q62 64 48 92 Z" fill="#2b1d14" stroke="#14213d" stroke-width="3"/>
+    <path d="M75 52 Q105 42 140 50" stroke="#8a6a52" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <!-- quepe de comandante -->
+    <path d="M40 66 Q110 -6 180 66 Z" fill="#fff" stroke="#14213d" stroke-width="4"/>
+    <rect x="42" y="60" width="136" height="16" rx="6" fill="#14213d"/>
+    <path d="M58 76 Q110 98 162 76 L160 70 L60 70 Z" fill="#14213d"/>
+    <circle cx="110" cy="44" r="12" fill="#ffc629" stroke="#14213d" stroke-width="3"/>
+    <text x="110" y="49" text-anchor="middle" font-family="Bangers" font-size="13" fill="#14213d">V</text>
+    <path d="M94 44 L74 38 M94 48 L76 48 M126 44 L146 38 M126 48 L144 48" stroke="#ffc629" stroke-width="4" stroke-linecap="round"/>
+    <!-- sobrancelhas marotas -->
+    <path d="M68 96 Q82 86 98 94" stroke="#2b1d14" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M122 92 Q138 84 152 96" stroke="#2b1d14" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- óculos aviador dourado -->
+    <path d="M62 102 Q82 98 100 104 Q100 126 82 128 Q62 126 62 102 Z" fill="#14213d" stroke="#ffc629" stroke-width="4"/>
+    <path d="M120 104 Q138 98 158 102 Q158 126 138 128 Q120 126 120 104 Z" fill="#14213d" stroke="#ffc629" stroke-width="4"/>
+    <path d="M100 106 Q110 100 120 106" stroke="#ffc629" stroke-width="4" fill="none"/>
+    <path d="M68 108 L80 106" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+    <path d="M126 108 L138 106" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+    <!-- narigão -->
+    <path d="M110 112 Q124 134 112 140 Q102 142 100 136" fill="#f2b98d" stroke="#14213d" stroke-width="3"/>
+    <!-- bochechas -->
+    <circle cx="70" cy="140" r="9" fill="#ff8c94" opacity=".55"/>
+    <circle cx="150" cy="140" r="9" fill="#ff8c94" opacity=".55"/>
+    <!-- sorrisão de quem acabou de captar no CDB -->
+    <path d="M74 146 Q110 186 146 146 Z" fill="#fff" stroke="#14213d" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M86 152 L86 160 M98 155 L98 166 M110 156 L110 168 M122 155 L122 166 M134 152 L134 160" stroke="#14213d" stroke-width="2"/>
+    <!-- brilho no dente -->
+    <path d="M150 140 l4 -10 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 Z" fill="#ffc629" stroke="#14213d" stroke-width="2"/>
+  </svg>
+
+  <div class="marca">
+    <h1 class="logo">VORCARO<small>AIR LINES ✈</small></h1>
+    <div class="balao" id="slogan">Suas milhas rendem 140% do CDI!</div>
+    <div>
+      <span class="selo">MASTER CLASS</span>
+      <span class="selo az">ROTAS POR DIJKSTRA</span>
+      <span class="selo">GARANTIDO PELO FGC*</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="cartao">
+    <h2>Monte seu voo</h2>
+    <label for="origem">🛫 Embarque em</label>
+    <select id="origem"></select>
+    <button class="trocar" id="trocar" type="button">⇅ inverter</button>
+    <label for="destino">🛬 Destino</label>
+    <select id="destino"></select>
+    <button class="decolar" id="buscar" type="button">DECOLAR!</button>
+    <div class="carregando" id="status"></div>
+
+    <div class="bilhete" id="bilhete">
+      <div class="topo"><span>CARTÃO DE EMBARQUE</span><span id="nvoo">VAL 000</span></div>
+      <div class="corpo">
+        <div class="caminho" id="caminho"></div>
+        <ol class="trechos" id="trechos"></ol>
+        <div class="numeros">
+          <div><b id="km">0</b><small>km</small></div>
+          <div><b id="custo">R$ 0</b><small>custo</small></div>
+          <div><b id="tempo">0h</b><small>tempo</small></div>
+        </div>
+        <div class="letrinha" id="letrinha"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cartao mapa-cartao">
+    <div id="mapa"></div>
+  </section>
+</main>
+
+<footer>
+  * Bagagem garantida pelo FGC até R$ 250 mil por CPF. Vorcaro Air Lines é uma <b>paródia</b> feita para a disciplina de
+  Estrutura de Dados (PRJ.ED.18). Nenhuma companhia aérea real foi liquidada durante a produção deste trabalho.
+  Qualquer semelhança com pessoas reais é caricatura, sátira e liberdade acadêmica.
+</footer>
+
+<script src="/leaflet/leaflet.js"></script>
+<script>
+const SLOGANS = [
+  "Suas milhas rendem 140% do CDI!",
+  "Primeira classe? Aqui é MASTER class.",
+  "Voando alto! Pouso? Depende do Banco Central.",
+  "Rota calculada por Dijkstra, auditada por ninguém.",
+  "Liquidez imediata: o serviço de bordo é só água.",
+  "O céu é o limite. O FGC também.",
+];
+const CARREGANDO = [
+  "Consultando a torre de controle (e o Banco Central)...",
+  "Dijkstra procurando o caminho mais curto... coisa rara por aqui.",
+  "Convertendo suas milhas em CDB...",
+  "Abastecendo o jatinho do comandante...",
+  "Pedindo autorização pro compliance... ele não atende.",
+];
+const LETRINHAS = [
+  "Pagamento em Pix, cartão ou CDB. Reembolso sujeito à liquidação.",
+  "Assento na janela garantido. A janela de liquidez, não.",
+  "Milhas creditadas em até 140% do CDI. Ou não.",
+  "Bagagem de mão: até 10 kg ou R$ 250 mil, o que vier primeiro.",
+];
+const sorteia = lista => lista[Math.floor(Math.random() * lista.length)];
+
+// troca o slogan do balão a cada 4 segundos
+let s = 0;
+setInterval(() => { s = (s + 1) % SLOGANS.length; document.getElementById("slogan").textContent = SLOGANS[s]; }, 4000);
+
+// ---------- MAPA ----------
+const mapa = L.map("mapa", { worldCopyJump: true }).setView([-10, -45], 3);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+  attribution: "&copy; OpenStreetMap &copy; CARTO", maxZoom: 10,
+}).addTo(mapa);
+
+let aeroportos = {};
+let camadaRota = L.layerGroup().addTo(mapa);
+let animacao = null;
+
+async function carregarMapa() {
+  const r = await fetch("/api/mapa");
+  const dados = await r.json();
+  const selO = document.getElementById("origem"), selD = document.getElementById("destino");
+
+  dados.aeroportos.forEach(a => {
+    aeroportos[a.iata] = a;
+    const txt = `${a.cidade} (${a.iata})${a.pais !== "Brasil" ? " - " + a.pais : ""}`;
+    selO.add(new Option(txt, a.iata));
+    selD.add(new Option(txt, a.iata));
+    L.circleMarker([a.lat, a.lng], { radius: 6, color: "#14213d", weight: 2, fillColor: "#ffc629", fillOpacity: 1 })
+      .bindTooltip(`<b>${a.iata}</b> ${a.cidade}`).addTo(mapa);
+  });
+  // todas as arestas do grafo, bem clarinhas
+  dados.rotas.forEach(([o, d]) => {
+    L.polyline([[aeroportos[o].lat, aeroportos[o].lng], [aeroportos[d].lat, aeroportos[d].lng]],
+      { color: "#0b3c8c", weight: 1, opacity: .25, dashArray: "4 6" }).addTo(mapa);
+  });
+  selO.value = "GRU";
+  selD.value = "GCM";
+}
+
+async function buscarRota() {
+  const origem = document.getElementById("origem").value;
+  const destino = document.getElementById("destino").value;
+  const status = document.getElementById("status");
+  const bilhete = document.getElementById("bilhete");
+
+  if (origem === destino) {
+    status.innerHTML = '<span class="erro">Você já está aí, comandante! Escolha outro destino.</span>';
+    bilhete.classList.remove("on");
+    return;
+  }
+  status.textContent = sorteia(CARREGANDO);
+  bilhete.classList.remove("on");
+
+  const r = await fetch(`/api/rota?origem=${origem}&destino=${destino}`);
+  const res = await r.json();
+  await new Promise(ok => setTimeout(ok, 700)); // suspense dramático
+  if (!r.ok) { status.innerHTML = `<span class="erro">${res.erro}</span>`; return; }
+
+  status.textContent = "Rota encontrada! Apertem os cintos.";
+  mostrarBilhete(res);
+  desenharRota(res.caminho);
+}
+
+function mostrarBilhete(res) {
+  const iatas = res.caminho.map(a => a.iata);
+  document.getElementById("nvoo").textContent = "VAL " + (100 + Math.floor(Math.random() * 900));
+  document.getElementById("caminho").innerHTML = iatas.join(" <span>✈</span> ");
+  document.getElementById("trechos").innerHTML = res.trechos.map(t =>
+    `<li>${aeroportos[t.de].cidade} → ${aeroportos[t.para].cidade}: <b>${t.km.toLocaleString("pt-BR")} km</b></li>`).join("");
+  document.getElementById("km").textContent = res.distancia_km.toLocaleString("pt-BR");
+  document.getElementById("custo").textContent = res.custo_reais.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  const h = Math.floor(res.tempo_horas), m = Math.round((res.tempo_horas - h) * 60);
+  document.getElementById("tempo").textContent = `${h}h${String(m).padStart(2, "0")}`;
+  const escalas = iatas.length - 2;
+  document.getElementById("letrinha").textContent =
+    (escalas === 0 ? "Voo direto! " : `${escalas} escala(s). `) + sorteia(LETRINHAS);
+  document.getElementById("bilhete").classList.add("on");
+}
+
+function desenharRota(caminho) {
+  camadaRota.clearLayers();
+  if (animacao) cancelAnimationFrame(animacao);
+  const pontos = caminho.map(a => [a.lat, a.lng]);
+
+  L.polyline(pontos, { color: "#14213d", weight: 9, opacity: .9 }).addTo(camadaRota);
+  L.polyline(pontos, { color: "#ffc629", weight: 5, dashArray: "12 10" }).addTo(camadaRota);
+  caminho.forEach((a, i) => {
+    const cor = i === 0 ? "#2ecc71" : i === caminho.length - 1 ? "#ff4d5e" : "#fff";
+    L.circleMarker([a.lat, a.lng], { radius: 10, color: "#14213d", weight: 3, fillColor: cor, fillOpacity: 1 })
+      .bindTooltip(`${i + 1}. ${a.cidade}`, { permanent: true, direction: "top", offset: [0, -8] }).addTo(camadaRota);
+  });
+  mapa.fitBounds(pontos, { padding: [60, 60] });
+
+  // aviãozinho percorrendo a rota
+  const aviao = L.marker(pontos[0], {
+    icon: L.divIcon({ className: "aviao-mapa", html: "✈️", iconSize: [30, 30] })
+  }).addTo(camadaRota);
+  let trecho = 0, t = 0;
+  function passo() {
+    t += 0.012;
+    if (t >= 1) { t = 0; trecho++; }
+    if (trecho >= pontos.length - 1) { trecho = 0; }
+    const [p, q] = [pontos[trecho], pontos[trecho + 1]];
+    aviao.setLatLng([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]);
+    animacao = requestAnimationFrame(passo);
+  }
+  passo();
+}
+
+document.getElementById("buscar").onclick = buscarRota;
+document.getElementById("trocar").onclick = () => {
+  const o = document.getElementById("origem"), d = document.getElementById("destino");
+  [o.value, d.value] = [d.value, o.value];
+};
+carregarMapa();
+</script>
+</body>
+</html>

@@ -270,8 +270,8 @@ setInterval(() => { s = (s + 1) % SLOGANS.length; document.getElementById("sloga
 
 // ---------- MAPA ----------
 const mapa = L.map("mapa", { worldCopyJump: true }).setView([-10, -45], 3);
-L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-  attribution: "&copy; OpenStreetMap &copy; CARTO", maxZoom: 10,
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: "&copy; OpenStreetMap", maxZoom: 10,
 }).addTo(mapa);
 
 let aeroportos = {};

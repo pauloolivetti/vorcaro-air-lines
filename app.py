@@ -68,7 +68,7 @@ def index():
 @app.get("/api/mapa")
 def mapa():
     aeroportos, grafo = carregar_grafo()
-    rotas = [[o, d] for o in grafo for d in grafo[o] if o < d]
+    rotas = [[o, d, km] for o in grafo for d, km in grafo[o].items() if o < d]
     return jsonify(aeroportos=list(aeroportos.values()), rotas=rotas)
 
 

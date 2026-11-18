@@ -93,6 +93,12 @@
   }
   .decolar:hover { transform: translate(-2px, -2px) rotate(-1deg); box-shadow: 6px 6px 0 var(--tinta); }
   .decolar:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--tinta); }
+  .bastidores {
+    display: block; margin-top: 10px; padding: 9px; text-align: center; text-decoration: none;
+    font: 17px Bangers, cursive; letter-spacing: 1px; color: #fff; background: #3b1f6b;
+    border: 3px solid var(--tinta); border-radius: 12px; box-shadow: 3px 3px 0 var(--tinta);
+  }
+  .bastidores:hover { background: #a3122a; }
   .carregando { margin-top: 12px; font-weight: 700; font-style: italic; min-height: 22px; }
 
   /* ---------- BILHETE (resultado) ---------- */
@@ -211,6 +217,7 @@
     <label for="destino">🛬 Destino</label>
     <select id="destino"></select>
     <button class="decolar" id="buscar" type="button">DECOLAR!</button>
+    <a class="bastidores" id="bastidores" href="/bastidores.html">🎬 BASTIDORES: como o Dijkstra escolheu essa rota?</a>
     <div class="carregando" id="status"></div>
 
     <div class="bilhete" id="bilhete">
@@ -371,6 +378,11 @@ function desenharRota(caminho) {
 }
 
 document.getElementById("buscar").onclick = buscarRota;
+// o botão de bastidores leva a viagem escolhida junto
+document.getElementById("bastidores").onclick = e => {
+  e.preventDefault();
+  location.href = `/bastidores.html?origem=${document.getElementById("origem").value}&destino=${document.getElementById("destino").value}`;
+};
 document.getElementById("trocar").onclick = () => {
   const o = document.getElementById("origem"), d = document.getElementById("destino");
   [o.value, d.value] = [d.value, o.value];

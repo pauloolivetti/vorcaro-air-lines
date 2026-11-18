@@ -109,6 +109,21 @@
   pre { background: var(--tinta); color: #e9f0ff; border-radius: 12px; padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.45; }
   .moral { text-align: center; font: 34px/1.15 Bangers, cursive; letter-spacing: 1.5px; color: var(--vermelho); -webkit-text-stroke: 1px var(--tinta); }
 
+
+  /* ---------- BRIEFING ---------- */
+  .briefing { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 10px; }
+  .briefing div { background: #fff; border: 3px solid var(--tinta); border-radius: 14px; padding: 12px; box-shadow: 4px 4px 0 var(--tinta); font-size: 15px; }
+  .briefing span { font-size: 34px; display: block; }
+  .briefing b { font: 24px Bangers, cursive; letter-spacing: 1px; display: block; color: var(--vermelho); }
+  .fluxo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .fluxo div { flex: 1; min-width: 200px; background: var(--ceu2); border: 3px solid var(--tinta); border-radius: 14px; padding: 10px 12px; font-size: 14px; }
+  .fluxo i { font: 34px Bangers, cursive; font-style: normal; color: var(--vermelho); }
+  .roteiro { margin: 6px 0 0; padding-left: 22px; }
+  .roteiro li { margin: 3px 0; }
+  #mapa3 { height: 430px; border: 3px solid var(--tinta); border-radius: 14px; }
+  pre.arvore { height: 430px; overflow: auto; margin: 0; background: #12301d; color: #d7ffe1; border: 3px solid var(--tinta); font-size: 13.5px; }
+  pre.arvore b { color: var(--ouro); }
+  pre.arvore .rota { color: #ff8c94; font-weight: 900; }
   /* ---------- ETAPAS (modo apresentação) ---------- */
   .etapa { display: none; }
   .etapa.ativa { display: block; animation: entra .4s; }
@@ -131,7 +146,9 @@
   footer { text-align: center; font-size: 13px; color: #34507a; padding: 10px 16px 40px; }
 
   @media (max-width: 860px) {
-    .grid2, .grid3, .anima, .hq, .glossario { grid-template-columns: 1fr; }
+    .grid2, .grid3, .anima, .hq, .glossario, .briefing { grid-template-columns: 1fr; }
+    #mapa3, pre.arvore { height: 360px; }
+    .fluxo i { transform: rotate(90deg); margin: 0 auto; }
     .topo { padding: 0 6px; }
     .topo h1 { font-size: 46px; }
     .topo svg { width: 120px; }
@@ -206,9 +223,43 @@
 
 <div class="wrap">
 
-  <!-- ===== 1. O MAPA É UM GRAFO ===== -->
-  <section class="cartao etapa ativa" data-titulo="O mapa é um grafo">
-    <h2><span class="num">1</span>Todo mapa de voos é um grafo</h2>
+  <!-- ===== 1. BRIEFING ===== -->
+  <section class="cartao etapa ativa" data-titulo="Briefing">
+    <h2><span class="num">1</span>Briefing: o trabalho em 1 minuto</h2>
+    <p>Antes do show, o resumo pra ninguém se perder. São só quatro ideias:</p>
+    <div class="briefing">
+      <div><span>🗺️</span><b>Grafo</b>Vértices (aeroportos), arestas (voos) e pesos (o custo de cada voo).
+        Pode ter <u>ciclos</u>: dá pra ir GRU → BSB → CNF → GRU e voltar pro mesmo lugar.</div>
+      <div><span>🌳</span><b>Árvore</b>Um grafo <u>sem ciclos</u> e com uma <u>raiz</u>. Da raiz até qualquer vértice existe
+        <u>um único caminho</u>. Cada vértice tem um só "pai".</div>
+      <div><span>🧠</span><b>Dijkstra</b>Sai da origem e vai "pendurando" cada aeroporto no caminho mais barato até ele.
+        O vetor <code>anterior</code> guarda o pai de cada um. Resultado: uma <u>árvore de caminhos mínimos</u> com raiz em GRU.</div>
+      <div><span>💸</span><b>A sacada</b>Mudou o peso, muda a árvore. Amigos do Vorcaro: peso = 1 voo.
+        Normal: peso = km (PostGIS). Não-amigos: peso = preço da passagem.</div>
+    </div>
+    <h3 style="margin-top:18px">🧩 Como o sistema funciona</h3>
+    <div class="fluxo">
+      <div>🐘 <b>PostgreSQL + PostGIS</b><br>guarda aeroportos (lat/long) e rotas; <code>ST_Distance</code> calcula os km</div>
+      <i>→</i>
+      <div>🐍 <b>Flask (app.py)</b><br>monta o grafo em lista de adjacência e roda o Dijkstra</div>
+      <i>→</i>
+      <div>🗺️ <b>Leaflet (navegador)</b><br>desenha as rotas no mapa e os cartões de embarque</div>
+    </div>
+    <h3 style="margin-top:18px">🎤 Roteiro da apresentação</h3>
+    <ol class="roteiro">
+      <li><b>Grafo:</b> o mapa de voos vira vértices, arestas e pesos.</li>
+      <li><b>Passageiros:</b> três pessoas, três jeitos de medir o custo.</li>
+      <li><b>Três rotas:</b> mesma viagem, rotas diferentes.</li>
+      <li><b>Dijkstra pensando:</b> o algoritmo em câmera lenta, passo a passo.</li>
+      <li><b>A árvore:</b> o que sobra no fim do Dijkstra.</li>
+      <li><b>O algoritmo:</b> os 4 passos e o código do <code>app.py</code>.</li>
+      <li><b>Moral da história.</b></li>
+    </ol>
+  </section>
+
+  <!-- ===== 2. O MAPA É UM GRAFO ===== -->
+  <section class="cartao etapa" data-titulo="O mapa é um grafo">
+    <h2><span class="num">2</span>Todo mapa de voos é um grafo</h2>
     <p>Pra um computador, a malha da Vorcaro Air Lines não é um mapa bonito: é um <b>grafo</b>.
     E um grafo só tem três ingredientes:</p>
     <div class="glossario">
@@ -220,9 +271,9 @@
       Mudou o peso, muda a rota. E é aí que entram os amigos do Vorcaro.</div>
   </section>
 
-  <!-- ===== 2. OS PERSONAGENS ===== -->
+  <!-- ===== 3. OS PERSONAGENS ===== -->
   <section class="cartao etapa" data-titulo="Os passageiros">
-    <h2><span class="num">2</span>Conheça os passageiros</h2>
+    <h2><span class="num">3</span>Conheça os passageiros</h2>
     <p>Três pessoas querem fazer a mesma viagem. O mapa é o mesmo, o algoritmo é o mesmo.
     A única coisa que muda é <b>o que cada um considera "caro"</b>, ou seja, o peso das arestas.</p>
     <div class="grid3">
@@ -235,10 +286,10 @@
         <div class="regra"><b>Peso da aresta = 1 voo.</b><br>O Dijkstra minimiza o <u>número de voos</u> (empatou? ganha o mais curto). Preço: R$ 2,00/km no jatinho.</div>
       </div>
       <div class="persona normal">
-        <span class="etiqueta">PÁGINA PRINCIPAL</span>
+        <span class="etiqueta">CLASSE ECONÔMICA</span>
         <div class="avatar">🧑‍💼✈️</div>
         <h3>O passageiro normal</h3>
-        <p>É o que a página principal mostra. Quer simplesmente <b>voar a menor distância</b> possível.</p>
+        <p>Nem amigo, nem pobre. Quer simplesmente <b>voar a menor distância</b> possível. É o custo proporcional à distância, igualzinho ao enunciado.</p>
         <div class="regra"><b>Peso da aresta = distância em km</b>, calculada pelo PostGIS com <code>ST_Distance</code>. Preço: R$ 0,50/km.</div>
       </div>
       <div class="persona pobre">
@@ -254,12 +305,12 @@
       <code>preço = 39 + 0,10·km + 0,00004·km²</code>. O <code>km²</code> faz o voo longo ficar salgado.</div>
   </section>
 
-  <!-- ===== 3. SIMULADOR ===== -->
+  <!-- ===== 4. SIMULADOR ===== -->
   <section class="cartao etapa" data-titulo="Três rotas">
-    <h2><span class="num">3</span>Mesma viagem, três rotas diferentes</h2>
-    <p>Escolha a viagem (já vem com a que você escolheu na página principal) e veja o que o Dijkstra devolve pra cada passageiro.</p>
+    <h2><span class="num">4</span>Mesma viagem, três rotas diferentes</h2>
+    <p>Saindo de São Paulo (GRU), escolha um dos destinos (já vem com o que você escolheu na página principal) e veja o que o Dijkstra devolve pra cada passageiro.</p>
     <div class="controles">
-      <div><label for="origem">🛫 Origem</label><select id="origem"></select></div>
+      <div><label for="origem">🛫 Partida (fixa, igual à página principal)</label><select id="origem" disabled></select></div>
       <div><label for="destino">🛬 Destino</label><select id="destino"></select></div>
       <button class="botao" id="comparar" type="button">COMPARAR!</button>
     </div>
@@ -272,9 +323,9 @@
     </div>
   </section>
 
-  <!-- ===== 4. DIJKSTRA PENSANDO ===== -->
+  <!-- ===== 5. DIJKSTRA PENSANDO ===== -->
   <section class="cartao etapa" data-titulo="Dijkstra pensando">
-    <h2><span class="num">4</span>Assista o Dijkstra pensando</h2>
+    <h2><span class="num">5</span>Assista o Dijkstra pensando</h2>
     <p>Agora em câmera lenta. Escolha um passageiro e vá apertando <b>⏭ PRÓXIMO PASSO</b> (ou deixe no automático): o algoritmo vai visitando os aeroportos,
     sempre pegando o <b>mais barato ainda não visitado</b>, e atualizando o preço dos vizinhos.</p>
     <div class="abas" id="abas">
@@ -296,9 +347,30 @@
     <table class="tabela-dist" id="tabela"></table>
   </section>
 
-  <!-- ===== 5. O ALGORITMO EM QUADRINHOS ===== -->
+  <!-- ===== 6. A ÁRVORE ===== -->
+  <section class="cartao etapa" data-titulo="A árvore">
+    <h2><span class="num">6</span>A árvore que o Dijkstra deixa pra trás</h2>
+    <p>Se o Dijkstra não parar no destino e rodar até o fim, ele descobre o caminho mais barato de GRU até <b>todos</b> os aeroportos.
+    Ligando cada aeroporto ao seu <code>anterior</code> (o "pai"), o grafo cheio de ciclos vira uma <b>árvore</b>: raiz em GRU,
+    sem ciclos e com um único caminho até cada lugar. A rota até o destino escolhido é só um galho dela.</p>
+    <div class="abas" id="abas-arvore">
+      <button class="aba on" data-p="amigo" type="button">🕶️ Árvore dos amigos</button>
+      <button class="aba" data-p="normal" type="button">🧑‍💼 Árvore normal</button>
+      <button class="aba" data-p="pobre" type="button">🎒 Árvore dos não-amigos</button>
+    </div>
+    <div class="anima">
+      <div>
+        <div id="mapa3"></div>
+        <div class="legenda"><span>🟢 galhos da árvore (cada aeroporto ligado ao seu pai)</span><span id="galho"></span></div>
+      </div>
+      <pre class="arvore" id="arvore"></pre>
+    </div>
+    <div class="dica" id="dica-arvore"></div>
+  </section>
+
+  <!-- ===== 7. O ALGORITMO EM QUADRINHOS ===== -->
   <section class="cartao etapa" data-titulo="O algoritmo">
-    <h2><span class="num">5</span>O Dijkstra em 4 quadrinhos</h2>
+    <h2><span class="num">7</span>O Dijkstra em 4 quadrinhos</h2>
     <div class="hq">
       <div class="quadro"><div class="emoji">♾️</div><b>1. Todo mundo começa no infinito</b>
         Cada aeroporto recebe custo ∞ ("ainda não sei chegar"). Só a origem começa com custo 0.</div>
@@ -352,11 +424,11 @@ const PASSAGEIROS = {
   },
   normal: {
     nome: "Passageiro normal", emoji: "🧑‍💼✈️", cor: "#0b3c8c",
-    peso: km => km,                          // distância (igual à página principal)
+    peso: km => km,                          // distância em km (custo proporcional à distância)
     unidade: c => `${fmt(c)} km`,
     preco: km => km * 0.5,
     tempo: (km, voos) => km / 800,
-    fala: () => "Exatamente a rota que a página principal mostra.",
+    fala: () => "O caminho geograficamente mais curto.",
   },
   pobre: {
     nome: "Não-amigos (pobres)", emoji: "🎒🥪", cor: "#ff4d5e",
@@ -373,6 +445,7 @@ const reais = n => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL
 const horas = h => `${Math.floor(h)}h${String(Math.round((h % 1) * 60)).padStart(2, "0")}`;
 
 let aeroportos = {}, rotas = [], grafo = {}, ultimosPontos = [];
+const DESTINOS = [["DXB", "🐪"], ["GCM", "🏝️"], ["JFK", "🗽"], ["CDG", "🗼"], ["FEN", "🐢"]];
 
 // ================= DIJKSTRA (mesmo do app.py, guardando os passos) =================
 function dijkstra(origem, destino, peso) {
@@ -399,8 +472,8 @@ function dijkstra(origem, destino, peso) {
     }
   }
   const caminho = [];
-  for (let v = destino; v; v = anterior[v]) caminho.unshift(v);
-  return { caminho, custo: dist[destino], passos };
+  if (destino) for (let v = destino; v; v = anterior[v]) caminho.unshift(v);
+  return { caminho, custo: dist[destino], passos, anterior, dist };
 }
 
 // ================= MAPAS =================
@@ -409,8 +482,8 @@ function novoMapa(id) {
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap", maxZoom: 10 }).addTo(m);
   return m;
 }
-const mapa = novoMapa("mapa"), mapa2 = novoMapa("mapa2");
-const camada = L.layerGroup().addTo(mapa), camada2 = L.layerGroup().addTo(mapa2);
+const mapa = novoMapa("mapa"), mapa2 = novoMapa("mapa2"), mapa3 = novoMapa("mapa3");
+const camada = L.layerGroup().addTo(mapa), camada2 = L.layerGroup().addTo(mapa2), camada3 = L.layerGroup().addTo(mapa3);
 const pos = i => [aeroportos[i].lat, aeroportos[i].lng];
 
 function desenharMalha(m) {
@@ -434,8 +507,9 @@ function comparar() {
     const preco = p.preco ? p.preco(km) : r.custo;
     const pts = r.caminho.map(pos);
     pontos.push(...pts);
-    L.polyline(pts, { color: "#14213d", weight: 9 - idx * 2, opacity: .9 }).addTo(camada);
-    L.polyline(pts, { color: p.cor, weight: 6 - idx * 2 }).addTo(camada);
+    // linhas "uma dentro da outra": quando as rotas coincidem, dá pra ver as três cores
+    L.polyline(pts, { color: "#14213d", weight: [14, 10, 6][idx] }).addTo(camada);
+    L.polyline(pts, { color: p.cor, weight: [10, 6, 3][idx] }).addTo(camada);
 
     caixa.insertAdjacentHTML("afterbegin", `
       <div class="persona ${chave}">
@@ -534,13 +608,61 @@ function desenharTabela(prov, visitados, atual, p) {
   sel("tabela").innerHTML = `<tr><th>IATA</th><th>Aeroporto</th><th>Custo até aqui</th><th>Status</th></tr>${linhas}`;
 }
 
+
+// ================= SEÇÃO 6: A ÁRVORE DE CAMINHOS MÍNIMOS =================
+let personaArvore = "amigo";
+function desenharArvore() {
+  const p = PASSAGEIROS[personaArvore], origem = sel("origem").value, destino = sel("destino").value;
+  const r = dijkstra(origem, null, p.peso);           // destino = null: roda até visitar todo mundo
+  // filhos de cada vértice (o inverso do vetor "anterior")
+  const filhos = {};
+  Object.entries(r.anterior).forEach(([v, pai]) => { if (pai) (filhos[pai] = filhos[pai] || []).push(v); });
+  Object.values(filhos).forEach(f => f.sort((a, b) => r.dist[a] - r.dist[b]));
+  const galho = new Set();
+  for (let v = destino; v; v = r.anterior[v]) galho.add(v);
+
+  // árvore em texto, estilo "tree" do terminal
+  const linhas = [];
+  (function imprime(v, prefixo, ultimo, raiz) {
+    const nome = `${v} ${aeroportos[v].cidade} (${p.unidade(r.dist[v])})`;
+    const txt = galho.has(v) ? `<span class="rota">${nome}${v === destino ? " ← destino" : ""}</span>` : nome;
+    linhas.push(raiz ? `<b>🌳 ${txt}</b>` : `${prefixo}${ultimo ? "└── " : "├── "}${txt}`);
+    const f = filhos[v] || [];
+    f.forEach((c, i) => imprime(c, raiz ? "" : prefixo + (ultimo ? "    " : "│   "), i === f.length - 1, false));
+  })(origem, "", true, true);
+  sel("arvore").innerHTML = linhas.join("\n");
+
+  // árvore no mapa
+  camada3.clearLayers();
+  Object.entries(r.anterior).forEach(([v, pai]) => {
+    if (!pai) return;
+    const noGalho = galho.has(v) && galho.has(pai);
+    L.polyline([pos(pai), pos(v)], { color: noGalho ? "#14213d" : "#2a9d55", weight: noGalho ? 9 : 3, opacity: noGalho ? 1 : .9 }).addTo(camada3);
+    if (noGalho) L.polyline([pos(pai), pos(v)], { color: "#ff4d5e", weight: 5 }).addTo(camada3);
+  });
+  Object.keys(aeroportos).forEach(i => L.circleMarker(pos(i), {
+    radius: i === origem ? 11 : galho.has(i) ? 8 : 5, color: "#14213d", weight: 2,
+    fillColor: i === origem ? "#2ecc71" : galho.has(i) ? "#ff4d5e" : "#fff", fillOpacity: 1 }).bindTooltip(i).addTo(camada3));
+  mapa3.fitBounds(Object.keys(aeroportos).map(pos), { padding: [20, 20] });
+
+  const profundidade = galho.size - 1;
+  sel("galho").innerHTML = `🔴 galho até ${aeroportos[destino].cidade}`;
+  sel("dica-arvore").innerHTML = `${p.emoji} Na árvore ${personaArvore === "amigo" ? "dos amigos" : personaArvore === "pobre" ? "dos não-amigos" : "normal"},
+    ${aeroportos[destino].cidade} está a <b>${profundidade} nível(is)</b> da raiz, ou seja, ${profundidade} voo(s).
+    São ${Object.keys(aeroportos).length} vértices e ${Object.keys(aeroportos).length - 1} arestas: toda árvore com N vértices tem N − 1 arestas.
+    O grafo original tem ${rotas.length}; o Dijkstra jogou fora as que não fazem parte de nenhum caminho mais barato.`;
+}
+document.querySelectorAll("#abas-arvore .aba").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#abas-arvore .aba").forEach(x => x.classList.remove("on"));
+  b.classList.add("on"); personaArvore = b.dataset.p; desenharArvore();
+});
+
 // ================= INICIALIZAÇÃO =================
 async function iniciar() {
   const dados = await (await fetch("/api/mapa")).json();
   dados.aeroportos.forEach(a => {
     aeroportos[a.iata] = a; grafo[a.iata] = {};
     const txt = `${a.cidade} (${a.iata})`;
-    sel("origem").add(new Option(txt, a.iata)); sel("destino").add(new Option(txt, a.iata));
   });
   rotas = dados.rotas;
   rotas.forEach(([o, d, km]) => { grafo[o][d] = km; grafo[d][o] = km; });
@@ -549,13 +671,16 @@ async function iniciar() {
   desenharMalha(mapa); desenharMalha(mapa2);
 
   const q = new URLSearchParams(location.search);
-  sel("origem").value = aeroportos[q.get("origem")] ? q.get("origem") : "FLN";
-  sel("destino").value = aeroportos[q.get("destino")] ? q.get("destino") : "DXB";
+  // mesma partida e mesmos destinos da página principal
+  sel("origem").add(new Option("São Paulo (GRU)", "GRU"));
+  DESTINOS.forEach(([iata, ico]) => sel("destino").add(new Option(`${ico} ${aeroportos[iata].cidade} (${iata})`, iata)));
+  sel("destino").value = DESTINOS.some(([i]) => i === q.get("destino")) ? q.get("destino") : "DXB";
   comparar();
   irPara(0);
 }
 
 sel("comparar").onclick = comparar;
+sel("destino").onchange = comparar;
 sel("play").onclick = play;
 sel("passo").onclick = () => { clearInterval(timer); passoAnim(); };
 
@@ -571,9 +696,10 @@ function irPara(i) {
   sel("proxima").disabled = etapa === etapas.length - 1;
   // mapas do Leaflet escondidos precisam recalcular o tamanho quando aparecem
   setTimeout(() => {
-    mapa.invalidateSize(); mapa2.invalidateSize();
-    if (etapa === 2 && ultimosPontos.length) mapa.fitBounds(ultimosPontos, { padding: [40, 40] });
-    if (etapa === 3) prepararAnimacao();
+    mapa.invalidateSize(); mapa2.invalidateSize(); mapa3.invalidateSize();
+    if (etapa === 3 && ultimosPontos.length) mapa.fitBounds(ultimosPontos, { padding: [40, 40] });
+    if (etapa === 4) prepararAnimacao();
+    if (etapa === 5) desenharArvore();
   }, 50);
   window.scrollTo({ top: document.querySelector(".palco").offsetHeight - 10, behavior: "smooth" });
 }
@@ -585,8 +711,8 @@ document.addEventListener("keydown", e => {
   if (e.key === "ArrowRight") irPara(etapa + 1);
   if (e.key === "ArrowLeft") irPara(etapa - 1);
 });
-document.querySelectorAll(".aba").forEach(b => b.onclick = () => {
-  document.querySelectorAll(".aba").forEach(x => x.classList.remove("on"));
+document.querySelectorAll("#abas .aba").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#abas .aba").forEach(x => x.classList.remove("on"));
   b.classList.add("on"); persona = b.dataset.p; prepararAnimacao();
 });
 iniciar();

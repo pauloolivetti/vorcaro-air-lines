@@ -99,11 +99,40 @@
     border: 3px solid var(--tinta); border-radius: 12px; box-shadow: 3px 3px 0 var(--tinta);
   }
   .bastidores:hover { background: #a3122a; }
+
+  /* ---------- PARTIDA FIXA + DESTINOS ---------- */
+  .partida { background: var(--azul); color: #fff; border: 3px solid var(--tinta); border-radius: 14px; padding: 10px 14px; box-shadow: 3px 3px 0 var(--tinta); }
+  .partida span { font: 15px Bangers, cursive; letter-spacing: 1.5px; color: var(--ouro); display: block; }
+  .partida b { font: 24px Bangers, cursive; letter-spacing: 1px; display: block; }
+  .partida small { opacity: .85; }
+  .destinos { display: grid; gap: 8px; }
+  .destino {
+    display: flex; align-items: center; gap: 10px; text-align: left; width: 100%; cursor: pointer;
+    background: #fff; border: 3px solid var(--tinta); border-radius: 14px; padding: 8px 10px;
+    box-shadow: 3px 3px 0 var(--tinta); font-family: Nunito, sans-serif; color: var(--tinta); transition: transform .1s;
+  }
+  .destino:hover { transform: translate(-2px, -2px) rotate(-.5deg); }
+  .destino.on { background: var(--ouro); transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--tinta); }
+  .destino .ico { font-size: 30px; }
+  .destino b { font: 20px Bangers, cursive; letter-spacing: 1px; display: block; line-height: 1.1; }
+  .destino small { font-size: 12px; font-weight: 700; opacity: .75; }
+  .legenda { display: flex; gap: 16px; flex-wrap: wrap; font-weight: 900; font-size: 14px; margin: 8px 4px 0; }
+  .legenda i { display: inline-block; width: 26px; height: 7px; border-radius: 3px; vertical-align: middle; margin-right: 6px; border: 2px solid var(--tinta); }
+
+  /* ---------- COMPARAÇÃO AMIGO x POBRE ---------- */
+  .comparacao { grid-column: 1 / -1; display: none; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: stretch; }
+  .comparacao .bilhete { display: flex; flex-direction: column; }
+  .comparacao .corpo { flex: 1; }
+  .versus { align-self: center; }
+  .comparacao.on { display: grid; animation: pula .5s; }
+  .versus { font: 54px Bangers, cursive; color: var(--vermelho); -webkit-text-stroke: 2px var(--tinta); transform: rotate(-8deg); text-shadow: 4px 4px 0 var(--tinta); }
+  .bilhete { box-shadow: 6px 6px 0 var(--tinta); border-radius: 14px; }
+  .bilhete.amigo .topo { background: var(--ouro); color: var(--tinta); }
+  .bilhete.pobre .topo { background: var(--vermelho); }
+  .bilhete .quem { font-size: 13px; font-weight: 700; margin: 0 0 4px; }
   .carregando { margin-top: 12px; font-weight: 700; font-style: italic; min-height: 22px; }
 
   /* ---------- BILHETE (resultado) ---------- */
-  .bilhete { margin-top: 18px; display: none; }
-  .bilhete.on { display: block; animation: pula .5s; }
   @keyframes pula { 0% { transform: scale(.8) rotate(-4deg); opacity: 0; } 70% { transform: scale(1.04); } 100% { transform: none; opacity: 1; } }
   .bilhete .topo {
     background: var(--azul); color: #fff; border-radius: 14px 14px 0 0; padding: 8px 14px;
@@ -124,7 +153,7 @@
   .letrinha { font-size: 11px; margin-top: 8px; color: #555; }
   .erro { color: var(--vermelho); font-weight: 900; }
 
-  #mapa { height: 620px; border-radius: 14px; border: 3px solid var(--tinta); }
+  #mapa { height: 560px; border-radius: 14px; border: 3px solid var(--tinta); }
   .mapa-cartao { padding: 10px; }
   .aviao-mapa { font-size: 30px; line-height: 30px; text-align: center; }
 
@@ -132,6 +161,8 @@
 
   @media (max-width: 860px) {
     main { grid-template-columns: 1fr; }
+    .comparacao.on { grid-template-columns: 1fr; }
+    .versus { text-align: center; }
     #mapa { height: 420px; }
     .logo { font-size: 52px; }
     .logo small { font-size: 30px; }
@@ -211,32 +242,29 @@
 <main>
   <section class="cartao">
     <h2>Monte seu voo</h2>
-    <label for="origem">🛫 Embarque em</label>
-    <select id="origem"></select>
-    <button class="trocar" id="trocar" type="button">⇅ inverter</button>
-    <label for="destino">🛬 Destino</label>
-    <select id="destino"></select>
-    <button class="decolar" id="buscar" type="button">DECOLAR!</button>
-    <a class="bastidores" id="bastidores" href="/bastidores.html">🎬 BASTIDORES: como o Dijkstra escolheu essa rota?</a>
-    <div class="carregando" id="status"></div>
-
-    <div class="bilhete" id="bilhete">
-      <div class="topo"><span>CARTÃO DE EMBARQUE</span><span id="nvoo">VAL 000</span></div>
-      <div class="corpo">
-        <div class="caminho" id="caminho"></div>
-        <ol class="trechos" id="trechos"></ol>
-        <div class="numeros">
-          <div><b id="km">0</b><small>km</small></div>
-          <div><b id="custo">R$ 0</b><small>custo</small></div>
-          <div><b id="tempo">0h</b><small>tempo</small></div>
-        </div>
-        <div class="letrinha" id="letrinha"></div>
-      </div>
+    <div class="partida">
+      <span>🛫 PARTIDA</span>
+      <b>São Paulo · Guarulhos (GRU)</b>
+      <small>Hub oficial da Vorcaro Air Lines</small>
     </div>
+    <label>🛬 Escolha o destino dos sonhos</label>
+    <div class="destinos" id="destinos"></div>
+    <div class="carregando" id="status"></div>
+    <a class="bastidores" id="bastidores" href="/bastidores.html">🎬 BASTIDORES: como o Dijkstra escolheu essas rotas?</a>
   </section>
 
   <section class="cartao mapa-cartao">
     <div id="mapa"></div>
+    <div class="legenda">
+      <span><i style="background:var(--ouro)"></i>🕶️ Amigos do Vorcaro</span>
+      <span><i style="background:var(--vermelho)"></i>🎒 Não-amigos</span>
+    </div>
+  </section>
+
+  <section class="comparacao" id="comparacao">
+    <div class="bilhete amigo" id="bilhete-amigo"></div>
+    <div class="versus">VS</div>
+    <div class="bilhete pobre" id="bilhete-pobre"></div>
   </section>
 </main>
 
@@ -248,6 +276,20 @@
 
 <script src="/leaflet/leaflet.js"></script>
 <script>
+const ORIGEM = "GRU";
+const DESTINOS = [
+  { iata: "DXB", ico: "🐪", txt: "Dubai", sub: "Onde o ouro é item de decoração" },
+  { iata: "GCM", ico: "🏝️", txt: "Ilhas Cayman", sub: "Praias lindas, dizem os assessores" },
+  { iata: "JFK", ico: "🗽", txt: "Nova York", sub: "Compras na 5ª Avenida" },
+  { iata: "CDG", ico: "🗼", txt: "Paris", sub: "Croissant com champanhe" },
+  { iata: "FEN", ico: "🐢", txt: "Fernando de Noronha", sub: "O paraíso (com taxa ambiental)" },
+];
+const PERFIS = {
+  amigo: { titulo: "🕶️🥂 AMIGOS DO VORCARO", classe: "CLASSE MASTER", cor: "#ffc629", aviao: "🛩️",
+           quem: "Dinheiro não é problema. Escala é. O Dijkstra procura a rota com MENOS VOOS." },
+  pobre: { titulo: "🎒🥪 NÃO-AMIGOS", classe: "CLASSE SEM-CDB", cor: "#ff4d5e", aviao: "✈️",
+           quem: "Topam qualquer escala pra economizar. O Dijkstra procura a rota MAIS BARATA." },
+};
 const SLOGANS = [
   "Suas milhas rendem 140% do CDI!",
   "Primeira classe? Aqui é MASTER class.",
@@ -258,44 +300,36 @@ const SLOGANS = [
 ];
 const CARREGANDO = [
   "Consultando a torre de controle (e o Banco Central)...",
-  "Dijkstra procurando o caminho mais curto... coisa rara por aqui.",
+  "Dijkstra separando os amigos dos não-amigos...",
   "Convertendo suas milhas em CDB...",
   "Abastecendo o jatinho do comandante...",
   "Pedindo autorização pro compliance... ele não atende.",
 ];
-const LETRINHAS = [
-  "Pagamento em Pix, cartão ou CDB. Reembolso sujeito à liquidação.",
-  "Assento na janela garantido. A janela de liquidez, não.",
-  "Milhas creditadas em até 140% do CDI. Ou não.",
-  "Bagagem de mão: até 10 kg ou R$ 250 mil, o que vier primeiro.",
-];
+const FALAS = {
+  amigo: e => e === 0 ? "Voo direto, champanhe e zero contato com o povo." : "Escala só no lounge VIP, com massagem.",
+  pobre: e => e === 0 ? "Deu sorte: voo direto!" : `${e} escala(s). Mas economizou o suficiente pra um pastel.`,
+};
 const sorteia = lista => lista[Math.floor(Math.random() * lista.length)];
+const reais = n => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+const horas = h => `${Math.floor(h)}h${String(Math.round((h % 1) * 60)).padStart(2, "0")}`;
+const $ = id => document.getElementById(id);
 
 // troca o slogan do balão a cada 4 segundos
 let s = 0;
-setInterval(() => { s = (s + 1) % SLOGANS.length; document.getElementById("slogan").textContent = SLOGANS[s]; }, 4000);
+setInterval(() => { s = (s + 1) % SLOGANS.length; $("slogan").textContent = SLOGANS[s]; }, 4000);
 
 // ---------- MAPA ----------
-const mapa = L.map("mapa", { worldCopyJump: true }).setView([-10, -45], 3);
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "&copy; OpenStreetMap", maxZoom: 10,
-}).addTo(mapa);
+const mapa = L.map("mapa", { worldCopyJump: true }).setView([-5, -40], 3);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap", maxZoom: 10 }).addTo(mapa);
 
-let aeroportos = {};
-let camadaRota = L.layerGroup().addTo(mapa);
-let animacao = null;
+let aeroportos = {}, destinoAtual = null, animacao = null;
+const camadaRota = L.layerGroup().addTo(mapa);
 
 async function carregarMapa() {
-  const r = await fetch("/api/mapa");
-  const dados = await r.json();
-  const selO = document.getElementById("origem"), selD = document.getElementById("destino");
-
+  const dados = await (await fetch("/api/mapa")).json();
   dados.aeroportos.forEach(a => {
     aeroportos[a.iata] = a;
-    const txt = `${a.cidade} (${a.iata})${a.pais !== "Brasil" ? " - " + a.pais : ""}`;
-    selO.add(new Option(txt, a.iata));
-    selD.add(new Option(txt, a.iata));
-    L.circleMarker([a.lat, a.lng], { radius: 6, color: "#14213d", weight: 2, fillColor: "#ffc629", fillOpacity: 1 })
+    L.circleMarker([a.lat, a.lng], { radius: 5, color: "#14213d", weight: 2, fillColor: "#ffc629", fillOpacity: 1 })
       .bindTooltip(`<b>${a.iata}</b> ${a.cidade}`).addTo(mapa);
   });
   // todas as arestas do grafo, bem clarinhas
@@ -303,89 +337,93 @@ async function carregarMapa() {
     L.polyline([[aeroportos[o].lat, aeroportos[o].lng], [aeroportos[d].lat, aeroportos[d].lng]],
       { color: "#0b3c8c", weight: 1, opacity: .25, dashArray: "4 6" }).addTo(mapa);
   });
-  selO.value = "GRU";
-  selD.value = "GCM";
+  // botões de destino
+  $("destinos").innerHTML = DESTINOS.map(d => `
+    <button class="destino" type="button" data-iata="${d.iata}">
+      <span class="ico">${d.ico}</span><span><b>${d.txt} (${d.iata})</b><small>${d.sub}</small></span>
+    </button>`).join("");
+  document.querySelectorAll(".destino").forEach(b => b.onclick = () => buscarRotas(b.dataset.iata));
+  buscarRotas(DESTINOS[0].iata);
 }
 
-async function buscarRota() {
-  const origem = document.getElementById("origem").value;
-  const destino = document.getElementById("destino").value;
-  const status = document.getElementById("status");
-  const bilhete = document.getElementById("bilhete");
+async function buscarRotas(destino) {
+  destinoAtual = destino;
+  document.querySelectorAll(".destino").forEach(b => b.classList.toggle("on", b.dataset.iata === destino));
+  $("status").textContent = sorteia(CARREGANDO);
 
-  if (origem === destino) {
-    status.innerHTML = '<span class="erro">Você já está aí, comandante! Escolha outro destino.</span>';
-    bilhete.classList.remove("on");
-    return;
-  }
-  status.textContent = sorteia(CARREGANDO);
-  bilhete.classList.remove("on");
+  // o MESMO Dijkstra roda duas vezes no servidor, com pesos diferentes
+  const [amigo, pobre] = await Promise.all(["amigo", "pobre"].map(perfil =>
+    fetch(`/api/rota?origem=${ORIGEM}&destino=${destino}&perfil=${perfil}`).then(r => r.json())));
+  await new Promise(ok => setTimeout(ok, 500)); // suspense dramático
+  if (amigo.erro || pobre.erro) { $("status").textContent = amigo.erro || pobre.erro; return; }
 
-  const r = await fetch(`/api/rota?origem=${origem}&destino=${destino}`);
-  const res = await r.json();
-  await new Promise(ok => setTimeout(ok, 700)); // suspense dramático
-  if (!r.ok) { status.innerHTML = `<span class="erro">${res.erro}</span>`; return; }
-
-  status.textContent = "Rota encontrada! Apertem os cintos.";
-  mostrarBilhete(res);
-  desenharRota(res.caminho);
+  $("status").textContent = "Rotas encontradas! Apertem os cintos.";
+  mostrarBilhete("amigo", amigo);
+  mostrarBilhete("pobre", pobre);
+  $("comparacao").classList.add("on");
+  desenharRotas({ amigo, pobre });
 }
 
-function mostrarBilhete(res) {
+function mostrarBilhete(perfil, res) {
+  const p = PERFIS[perfil];
   const iatas = res.caminho.map(a => a.iata);
-  document.getElementById("nvoo").textContent = "VAL " + (100 + Math.floor(Math.random() * 900));
-  document.getElementById("caminho").innerHTML = iatas.join(" <span>✈</span> ");
-  document.getElementById("trechos").innerHTML = res.trechos.map(t =>
-    `<li>${aeroportos[t.de].cidade} → ${aeroportos[t.para].cidade}: <b>${t.km.toLocaleString("pt-BR")} km</b></li>`).join("");
-  document.getElementById("km").textContent = res.distancia_km.toLocaleString("pt-BR");
-  document.getElementById("custo").textContent = res.custo_reais.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-  const h = Math.floor(res.tempo_horas), m = Math.round((res.tempo_horas - h) * 60);
-  document.getElementById("tempo").textContent = `${h}h${String(m).padStart(2, "0")}`;
-  const escalas = iatas.length - 2;
-  document.getElementById("letrinha").textContent =
-    (escalas === 0 ? "Voo direto! " : `${escalas} escala(s). `) + sorteia(LETRINHAS);
-  document.getElementById("bilhete").classList.add("on");
+  $(`bilhete-${perfil}`).innerHTML = `
+    <div class="topo"><span>${p.titulo}</span><span>${p.classe}</span></div>
+    <div class="corpo">
+      <p class="quem">${p.quem}</p>
+      <div class="caminho">${iatas.join(" <span>✈</span> ")}</div>
+      <ol class="trechos">${res.trechos.map(t =>
+        `<li>${aeroportos[t.de].cidade} → ${aeroportos[t.para].cidade}: <b>${t.km.toLocaleString("pt-BR")} km</b></li>`).join("")}</ol>
+      <div class="numeros">
+        <div><b>${res.escalas}</b><small>escala(s)</small></div>
+        <div><b>${reais(res.custo_reais)}</b><small>preço</small></div>
+        <div><b>${horas(res.tempo_horas)}</b><small>tempo</small></div>
+      </div>
+      <div class="letrinha">${res.distancia_km.toLocaleString("pt-BR")} km voados. ${FALAS[perfil](res.escalas)}</div>
+    </div>`;
 }
 
-function desenharRota(caminho) {
+function desenharRotas(resultados) {
   camadaRota.clearLayers();
   if (animacao) cancelAnimationFrame(animacao);
-  const pontos = caminho.map(a => [a.lat, a.lng]);
+  const todos = [], avioes = [];
 
-  L.polyline(pontos, { color: "#14213d", weight: 9, opacity: .9 }).addTo(camadaRota);
-  L.polyline(pontos, { color: "#ffc629", weight: 5, dashArray: "12 10" }).addTo(camadaRota);
-  caminho.forEach((a, i) => {
-    const cor = i === 0 ? "#2ecc71" : i === caminho.length - 1 ? "#ff4d5e" : "#fff";
-    L.circleMarker([a.lat, a.lng], { radius: 10, color: "#14213d", weight: 3, fillColor: cor, fillOpacity: 1 })
-      .bindTooltip(`${i + 1}. ${a.cidade}`, { permanent: true, direction: "top", offset: [0, -8] }).addTo(camadaRota);
+  // amigo embaixo (mais grosso), pobre por cima (tracejado): as duas rotas ficam visíveis mesmo quando se sobrepõem
+  ["amigo", "pobre"].forEach(perfil => {
+    const pontos = resultados[perfil].caminho.map(a => [a.lat, a.lng]);
+    todos.push(...pontos);
+    const grosso = perfil === "amigo" ? 14 : 5;
+    if (perfil === "amigo") L.polyline(pontos, { color: "#14213d", weight: grosso + 4, opacity: .9 }).addTo(camadaRota);
+    L.polyline(pontos, { color: PERFIS[perfil].cor, weight: grosso, dashArray: perfil === "pobre" ? "10 8" : null }).addTo(camadaRota);
+    resultados[perfil].caminho.slice(1, -1).forEach(a =>
+      L.circleMarker([a.lat, a.lng], { radius: 8, color: "#14213d", weight: 3, fillColor: "#fff", fillOpacity: 1 })
+        .bindTooltip(a.cidade, { direction: "top" }).addTo(camadaRota));
+    const aviao = L.marker(pontos[0], { icon: L.divIcon({ className: "aviao-mapa", html: PERFIS[perfil].aviao, iconSize: [30, 30] }) }).addTo(camadaRota);
+    avioes.push({ aviao, pontos, trecho: 0, t: 0, vel: perfil === "amigo" ? 0.014 : 0.02 });
   });
-  mapa.fitBounds(pontos, { padding: [60, 60] });
+  const o = aeroportos[ORIGEM], d = aeroportos[destinoAtual];
+  [[o, "#2ecc71"], [d, "#ff4d5e"]].forEach(([a, cor]) =>
+    L.circleMarker([a.lat, a.lng], { radius: 11, color: "#14213d", weight: 3, fillColor: cor, fillOpacity: 1 })
+      .bindTooltip(a.cidade, { permanent: true, direction: "top", offset: [0, -8] }).addTo(camadaRota));
+  mapa.fitBounds(todos, { padding: [50, 50] });
 
-  // aviãozinho percorrendo a rota
-  const aviao = L.marker(pontos[0], {
-    icon: L.divIcon({ className: "aviao-mapa", html: "✈️", iconSize: [30, 30] })
-  }).addTo(camadaRota);
-  let trecho = 0, t = 0;
+  // aviõezinhos percorrendo as rotas
   function passo() {
-    t += 0.012;
-    if (t >= 1) { t = 0; trecho++; }
-    if (trecho >= pontos.length - 1) { trecho = 0; }
-    const [p, q] = [pontos[trecho], pontos[trecho + 1]];
-    aviao.setLatLng([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]);
+    avioes.forEach(v => {
+      v.t += v.vel;
+      if (v.t >= 1) { v.t = 0; v.trecho = (v.trecho + 1) % (v.pontos.length - 1); }
+      const [p, q] = [v.pontos[v.trecho], v.pontos[v.trecho + 1]];
+      v.aviao.setLatLng([p[0] + (q[0] - p[0]) * v.t, p[1] + (q[1] - p[1]) * v.t]);
+    });
     animacao = requestAnimationFrame(passo);
   }
   passo();
 }
 
-document.getElementById("buscar").onclick = buscarRota;
 // o botão de bastidores leva a viagem escolhida junto
-document.getElementById("bastidores").onclick = e => {
+$("bastidores").onclick = e => {
   e.preventDefault();
-  location.href = `/bastidores.html?origem=${document.getElementById("origem").value}&destino=${document.getElementById("destino").value}`;
-};
-document.getElementById("trocar").onclick = () => {
-  const o = document.getElementById("origem"), d = document.getElementById("destino");
-  [o.value, d.value] = [d.value, o.value];
+  location.href = `/bastidores.html?origem=${ORIGEM}&destino=${destinoAtual || DESTINOS[0].iata}`;
 };
 carregarMapa();
 </script>

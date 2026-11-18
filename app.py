@@ -7,8 +7,16 @@ import psycopg2
 from flask import Flask, jsonify, request, send_from_directory
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://vorcaro:vorcaro@localhost:5432/vorcaro")
-PRECO_POR_KM = 0.50       # R$ por km voado
 VELOCIDADE_KMH = 800      # velocidade média do avião
+
+# Cada tipo de passageiro dá um PESO diferente para a mesma aresta (km do PostGIS).
+# O Dijkstra é o mesmo; só muda o peso.
+PERFIS = {
+    # Amigos do Vorcaro: cada voo pesa 1 -> menos escalas (km/1e6 só desempata pelo mais curto)
+    "amigo": lambda km: 1 + km / 1_000_000,
+    # Não-amigos: peso = preço da passagem econômica do trecho (voo longo é bem mais caro)
+    "pobre": lambda km: 39 + 0.10 * km + 0.00004 * km ** 2,
+}
 
 app = Flask(__name__, static_folder="public", static_url_path="")
 
@@ -28,8 +36,9 @@ def carregar_grafo():
     return aeroportos, grafo
 
 
-def dijkstra(grafo, origem, destino):
-    """Retorna (caminho, distância total) do menor caminho entre origem e destino."""
+def dijkstra(grafo, origem, destino, peso):
+    """Retorna (caminho, custo total) do caminho de menor custo entre origem e destino.
+    peso(km) diz quanto custa usar uma aresta de km quilômetros."""
     distancia = {v: float("inf") for v in grafo}   # melhor distância conhecida
     anterior = {v: None for v in grafo}            # de onde eu vim (p/ remontar o caminho)
     distancia[origem] = 0
@@ -43,8 +52,8 @@ def dijkstra(grafo, origem, destino):
         nao_visitados.remove(atual)
 
         # 2) RELAXA as arestas: tenta melhorar a distância dos vizinhos
-        for vizinho, peso in grafo[atual].items():
-            nova = distancia[atual] + peso
+        for vizinho, km in grafo[atual].items():
+            nova = distancia[atual] + peso(km)
             if nova < distancia[vizinho]:
                 distancia[vizinho] = nova
                 anterior[vizinho] = atual
@@ -75,21 +84,32 @@ def mapa():
 @app.get("/api/rota")
 def rota():
     origem, destino = request.args.get("origem"), request.args.get("destino")
+    perfil = request.args.get("perfil", "amigo")
     aeroportos, grafo = carregar_grafo()
-    if origem not in grafo or destino not in grafo:
-        return jsonify(erro="Aeroporto inválido"), 400
+    if origem not in grafo or destino not in grafo or perfil not in PERFIS:
+        return jsonify(erro="Parâmetros inválidos"), 400
 
-    caminho, km = dijkstra(grafo, origem, destino)
+    caminho, custo = dijkstra(grafo, origem, destino, PERFIS[perfil])
     if caminho is None:
         return jsonify(erro="Não existe rota entre esses aeroportos"), 404
 
     trechos = [{"de": a, "para": b, "km": grafo[a][b]} for a, b in zip(caminho, caminho[1:])]
+    km = sum(t["km"] for t in trechos)
+    escalas = len(caminho) - 2
+    if perfil == "amigo":
+        preco = km * 2.00                      # jatinho: R$ 2,00 por km
+        tempo = km / 900 + escalas * 0.5       # jatinho mais rápido, escala no lounge VIP
+    else:
+        preco = custo                          # o custo do Dijkstra já é o preço
+        tempo = km / VELOCIDADE_KMH + escalas * 2   # 2h de espera em cada escala
+
     return jsonify(
         caminho=[aeroportos[i] for i in caminho],
         trechos=trechos,
+        escalas=escalas,
         distancia_km=round(km, 1),
-        custo_reais=round(km * PRECO_POR_KM, 2),
-        tempo_horas=round(km / VELOCIDADE_KMH, 2),
+        custo_reais=round(preco, 2),
+        tempo_horas=round(tempo, 2),
     )
 
 

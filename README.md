@@ -66,14 +66,17 @@ Usamos o **Neon** (Postgres grátis na nuvem, com suporte a PostGIS).
 | Rota | O que faz |
 |---|---|
 | `GET /api/mapa` | Lista os aeroportos (vértices) e rotas (arestas) para desenhar o mapa |
-| `GET /api/rota?origem=GRU&destino=GCM` | Roda o Dijkstra e devolve o caminho, os trechos, distância (km), custo (R$) e tempo (h) |
+| `GET /api/rota?origem=GRU&destino=GCM&perfil=amigo` | Roda o Dijkstra e devolve o caminho, os trechos, escalas, distância (km), preço (R$) e tempo (h). `perfil=amigo` (menos voos) ou `perfil=pobre` (mais barato) |
+| `/bastidores.html` | Explicação didática em 8 etapas: grafo, árvore e Dijkstra passo a passo |
 
 ## Como o custo é calculado
 
-- **Peso da aresta** = distância real em km, calculada pelo PostGIS com
-  `ST_Distance(geography, geography)` (view `rota_com_distancia`).
-- **Custo da viagem** = distância total × R$ 0,50 por km.
-- **Tempo de voo** = distância total ÷ 800 km/h.
+A distância real de cada aresta (km) vem do PostGIS com `ST_Distance(geography, geography)`
+(view `rota_com_distancia`). A partir dela, cada tipo de passageiro usa um peso:
+
+- **Amigos do Vorcaro**: peso = 1 por voo (menos escalas). Preço = R$ 2,00/km.
+- **Não-amigos**: peso = preço da passagem = 39 + 0,10·km + 0,00004·km². Voo longo fica caro, então vale fazer escalas.
+- **Passageiro normal** (nos bastidores): peso = km, custo proporcional à distância.
 
 Para cadastrar uma rota nova é só inserir no banco (ida e volta) e recarregar a página:
 
